@@ -5,13 +5,6 @@ import { extraerError } from '../utils/errores';
 import Alerta from '../components/Alerta';
 import PantallaAcceso from '../components/PantallaAcceso';
 
-// Usuarios del seed.sql, solo visibles en desarrollo para agilizar la demo
-const DEMO = [
-  { email: 'admin@galacticos.test', rol: 'Admin' },
-  { email: 'carlos@galacticos.test', rol: 'Técnico' },
-  { email: 'cliente@galacticos.test', rol: 'Cliente' },
-];
-
 export default function Login() {
   const { user, login, sesionExpirada } = useAuth();
   const navigate = useNavigate();
@@ -83,22 +76,6 @@ export default function Login() {
       <p className="text-center small mt-4 mb-0">
         ¿No tienes cuenta? <Link to="/registro">Regístrate como cliente</Link>
       </p>
-
-      {import.meta.env.DEV && (
-        <div className="mt-4 pt-3 border-top">
-          <p className="small text-body-secondary mb-2">Usuarios de prueba (contraseña <code>Galacticos2026</code>):</p>
-          <div className="d-flex flex-wrap gap-2">
-            {DEMO.map((d) => (
-              <button
-                key={d.email} type="button" className="btn btn-sm btn-outline-secondary"
-                onClick={() => setForm({ email: d.email, password: 'Galacticos2026' })}
-              >
-                {d.rol}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </PantallaAcceso>
   );
 }
