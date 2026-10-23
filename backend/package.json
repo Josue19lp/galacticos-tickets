@@ -27,5 +27,9 @@
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^10.0.12",
     "pg": "^8.23.0"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true,
+    "msgpackr-extract@3.0.4": true
   }
 }
