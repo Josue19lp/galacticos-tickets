@@ -4,8 +4,11 @@ export default function ColumnaEstado({ estado, tickets, onCambiarEstado, ocupad
   return (
     <section className={`columna columna-${estado.valor}`} aria-label={estado.etiqueta}>
       <header className="columna-cabecera">
-        <h2 className="h6 mb-0">{estado.etiqueta}</h2>
-        <span className="badge rounded-pill text-bg-light border">{tickets.length}</span>
+        <h2 className="columna-titulo">
+          <span className="columna-punto" aria-hidden="true" />
+          {estado.etiqueta}
+        </h2>
+        <span className="columna-total">{tickets.length}</span>
       </header>
       <div className="columna-cuerpo">
         {tickets.length === 0 && <p className="text-body-secondary small text-center my-4">Sin tickets</p>}

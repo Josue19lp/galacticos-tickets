@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { BadgeRol } from './Badges';
+import { ROLES } from '../utils/formato';
 import { useState } from 'react';
 
 export default function Navbar() {
@@ -42,11 +42,14 @@ export default function Navbar() {
             ))}
           </ul>
           <div className="d-flex align-items-center gap-3 py-2 py-md-0">
-            <div className="text-white small text-end lh-sm">
+            <span className="avatar-usuario" aria-hidden="true">
+              {user.nombre.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('')}
+            </span>
+            <div className="text-white small lh-sm">
               <div className="fw-semibold">{user.nombre}</div>
-              <BadgeRol valor={user.rol} />
+              <div className="rol-usuario">{ROLES[user.rol]?.etiqueta}</div>
             </div>
-            <button className="btn btn-sm btn-outline-light" onClick={salir}>
+            <button className="btn btn-sm btn-salir" onClick={salir}>
               Cerrar sesión
             </button>
           </div>

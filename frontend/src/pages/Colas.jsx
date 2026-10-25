@@ -50,12 +50,30 @@ export default function Colas() {
   const cambiarFiltro = (e) => setFiltros({ ...filtros, [e.target.name]: e.target.value });
   const abrir = (id) => setParams(id ? { job: id } : {});
 
+  // Resumen simplificado por cola: "En cola" junta waiting + prioritized
+  // (en BullMQ los trabajos con prioridad esperan en "prioritized").
+  const gruposDe = (cola) => {
+    const r = resumen?.[cola] || {};
+    return [
+      { clave: 'cola', etiqueta: 'En cola', n: (r.waiting || 0) + (r.prioritized || 0), filtro: 'prioritized' },
+      { clave: 'procesando', etiqueta: 'Procesando', n: r.active || 0, filtro: 'active' },
+      { clave: 'reintentando', etiqueta: 'Reintentando', n: r.delayed || 0, filtro: 'delayed' },
+      { clave: 'completado', etiqueta: 'Completados', n: r.completed || 0, filtro: 'completed' },
+      { clave: 'fallido', etiqueta: 'Fallidos', n: r.failed || 0, filtro: 'failed' },
+    ];
+  };
+
+  const filtrarPor = (cola, estado) => {
+    const yaActivo = filtros.cola === cola && filtros.estado === estado;
+    setFiltros({ ...filtros, cola: yaActivo ? '' : cola, estado: yaActivo ? '' : estado });
+  };
+
   return (
     <div className="container-xl py-4">
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+      <div className="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>
-          <h1 className="h4 mb-0">Colas de trabajo</h1>
-          <small className="text-body-secondary">BullMQ + Redis · reintentos automáticos: 3 intentos con espera de 2, 4 y 8 s</small>
+          <h1 className="titulo-pagina mb-1">Colas de trabajo</h1>
+          <p className="text-body-secondary small mb-0">3 intentos automáticos con espera de 2, 4 y 8 s</p>
         </div>
         <div className="d-flex align-items-center gap-3">
           <div className="form-check form-switch mb-0">
@@ -63,7 +81,7 @@ export default function Colas() {
             <label className="form-check-label small" htmlFor="auto">Tiempo real</label>
           </div>
           {user.rol === 'admin' && (
-            <a className="btn btn-outline-secondary btn-sm" href={`${API_ORIGIN}/admin/queues`} target="_blank" rel="noreferrer">
+            <a className="btn btn-accion px-3 d-flex align-items-center" href={`${API_ORIGIN}/admin/queues`} target="_blank" rel="noreferrer">
               Abrir bull-board ↗
             </a>
           )}
@@ -72,62 +90,70 @@ export default function Colas() {
 
       <Alerta onCerrar={() => setError('')}>{error}</Alerta>
 
-      {/* Resumen por cola */}
-      <div className="row g-3 mb-3">
-        {COLAS.map((c) => (
-          <div className="col-md-6" key={c.valor}>
-            <div className="card h-100">
-              <div className="card-body">
-                <div className="d-flex justify-content-between align-items-baseline">
-                  <h2 className="h6 mb-0">{c.etiqueta}</h2>
-                  <small className="text-body-secondary">{c.descripcion}</small>
+      {/* Resumen por cola: una barra y una leyenda en texto */}
+      <div className="row g-3 mb-4">
+        {COLAS.map((c) => {
+          const grupos = gruposDe(c.valor);
+          const total = grupos.reduce((suma, g) => suma + g.n, 0);
+          return (
+            <div className="col-lg-6" key={c.valor}>
+              <section className="cola-panel">
+                <div className="d-flex justify-content-between align-items-baseline gap-2 flex-wrap">
+                  <h2 className="cola-nombre">{c.etiqueta}</h2>
+                  <span className="cola-desc">{c.descripcion}</span>
                 </div>
-                <div className="contadores mt-3">
-                  {ESTADOS_BULL.map((e) => (
-                    <button
-                      key={e} type="button"
-                      className={`contador contador-${ESTADOS_JOB[e].color} ${filtros.cola === c.valor && filtros.estado === e ? 'activo' : ''}`}
-                      onClick={() => setFiltros({ ...filtros, cola: c.valor, estado: e })}
-                      title={`Ver ${ESTADOS_JOB[e].etiqueta.toLowerCase()} en ${c.etiqueta}`}
-                    >
-                      <span className="contador-num">{resumen?.[c.valor]?.[e] ?? '–'}</span>
-                      <span className="contador-txt">{ESTADOS_JOB[e].etiqueta}</span>
-                    </button>
+                <p className="cola-total">
+                  <span className="cola-total-num">{resumen ? total : '–'}</span> trabajos
+                </p>
+                <div className="cola-barra" aria-hidden="true">
+                  {grupos.filter((g) => g.n > 0).map((g) => (
+                    <span key={g.clave} className={`seg seg-${g.clave}`} style={{ flexGrow: g.n }} />
                   ))}
                 </div>
-              </div>
+                <ul className="cola-leyenda">
+                  {grupos.map((g) => (
+                    <li key={g.clave}>
+                      <button
+                        type="button"
+                        className={`leyenda-item ${filtros.cola === c.valor && filtros.estado === g.filtro ? 'activo' : ''} ${g.clave === 'fallido' && g.n > 0 ? 'hay-fallos' : ''}`}
+                        aria-pressed={filtros.cola === c.valor && filtros.estado === g.filtro}
+                        onClick={() => filtrarPor(c.valor, g.filtro)}
+                        title={`Ver ${g.etiqueta.toLowerCase()} en ${c.etiqueta}`}
+                      >
+                        <span className={`punto seg-${g.clave}`} aria-hidden="true" />
+                        <span className="leyenda-num">{resumen ? g.n : '–'}</span>
+                        {g.etiqueta}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="row g-3">
         <div className={seleccionado ? 'col-lg-7' : 'col-12'}>
-          <div className="card">
-            <div className="card-header bg-transparent">
-              <div className="row g-2 align-items-center">
-                <div className="col-auto"><h2 className="h6 mb-0">Trabajos</h2></div>
-                <div className="col-auto ms-auto">
-                  <select name="cola" className="form-select form-select-sm" value={filtros.cola} onChange={cambiarFiltro} aria-label="Cola">
-                    <option value="">Todas las colas</option>
-                    {COLAS.map((c) => <option key={c.valor} value={c.valor}>{c.etiqueta}</option>)}
-                  </select>
-                </div>
-                <div className="col-auto">
-                  <select name="estado" className="form-select form-select-sm" value={filtros.estado} onChange={cambiarFiltro} aria-label="Estado">
-                    <option value="">Todos los estados</option>
-                    {ESTADOS_BULL.map((e) => <option key={e} value={e}>{ESTADOS_JOB[e].etiqueta}</option>)}
-                  </select>
-                </div>
-              </div>
+          <div className="panel-trabajos">
+            <div className="panel-trabajos-cabecera">
+              <h2 className="cola-nombre me-auto">Trabajos</h2>
+              <select name="cola" className="form-select form-select-sm w-auto" value={filtros.cola} onChange={cambiarFiltro} aria-label="Cola">
+                <option value="">Todas las colas</option>
+                {COLAS.map((c) => <option key={c.valor} value={c.valor}>{c.etiqueta}</option>)}
+              </select>
+              <select name="estado" className="form-select form-select-sm w-auto" value={filtros.estado} onChange={cambiarFiltro} aria-label="Estado">
+                <option value="">Todos los estados</option>
+                {ESTADOS_BULL.map((e) => <option key={e} value={e}>{ESTADOS_JOB[e].etiqueta}</option>)}
+              </select>
             </div>
             {cargando ? (
               <Cargando />
             ) : jobs.length === 0 ? (
-              <p className="card-body text-body-secondary small mb-0">No hay trabajos con esos filtros.</p>
+              <p className="text-body-secondary small mb-0 p-4">No hay trabajos con esos filtros.</p>
             ) : (
               <div className="table-responsive">
-                <table className="table table-hover table-sm align-middle mb-0 small">
+                <table className="table table-hover align-middle mb-0 tabla-trabajos">
                   <thead>
                     <tr><th>Trabajo</th><th>Ticket</th><th>Prioridad</th><th>Estado</th><th>Intentos</th><th>Creado</th></tr>
                   </thead>
@@ -198,7 +224,7 @@ function DetalleJob({ id, onCerrar, esAdmin, alCambiar }) {
   };
 
   return (
-    <div className="card detalle-job">
+    <div className="panel-trabajos detalle-job">
       <div className="card-header bg-transparent d-flex justify-content-between align-items-center">
         <h2 className="h6 mb-0">Detalle del trabajo</h2>
         <button type="button" className="btn-close btn-sm" aria-label="Cerrar" onClick={onCerrar} />
