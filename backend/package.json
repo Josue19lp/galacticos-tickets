@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
+    "start:prod": "node src/prod.js",
     "dev": "node --watch src/server.js",
     "worker": "node src/workers/worker.js",
     "db:init": "node database/init.js"
