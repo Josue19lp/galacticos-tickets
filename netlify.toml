@@ -1,7 +1,6 @@
 # Despliegue del frontend en Netlify.
 # Netlify actúa como proxy hacia la API en Render: el navegador ve un solo dominio,
 # así la cookie del refresh token funciona sin cambios y no hay problemas de CORS.
-# ⚠ Reemplaza TU-API por el nombre real de tu servicio en Render.
 
 [build]
   base    = "frontend"
@@ -13,13 +12,13 @@
 
 [[redirects]]
   from   = "/api/*"
-  to     = "https://TU-API.onrender.com/api/:splat"
+  to     = "https://galacticos-tickets.onrender.com/api/:splat"
   status = 200
   force  = true
 
 [[redirects]]
   from   = "/admin/*"
-  to     = "https://TU-API.onrender.com/admin/:splat"
+  to     = "https://galacticos-tickets.onrender.com/admin/:splat"
   status = 200
   force  = true
 
