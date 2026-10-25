@@ -31,10 +31,11 @@ async function listar({ rol } = {}) {
   return rows;
 }
 
-// Técnico con menos tickets abiertos (pendiente o en progreso); desempata por id
+// Técnico con menor carga ponderada por prioridad (alta = 3, media = 2, baja = 1); desempata por id
 async function tecnicoConMenosCarga() {
   const { rows } = await db.query(`
-    SELECT u.id, u.nombre, u.email, COUNT(t.id)::int AS abiertos
+    SELECT u.id, u.nombre, u.email,
+           COALESCE(SUM(CASE t.prioridad WHEN 'alta' THEN 3 WHEN 'media' THEN 2 ELSE 1 END), 0)::int AS abiertos
     FROM users u
     LEFT JOIN tickets t ON t.tecnico_id = u.id AND t.estado <> 'resuelto'
     WHERE u.rol = 'tecnico'
