@@ -30,7 +30,12 @@ async function procesarAsignacion(job) {
     jobId: notif.id, cola: 'notificacion', ticketId, estado: 'encolado', intentos: 0,
   });
 
-  return { tecnicoId: tecnico.id, tecnico: tecnico.nombre, cargaPrevia: tecnico.abiertos };
+  return {
+    prioridad: ticket.prioridad,
+    tecnicoId: tecnico.id,
+    tecnico: tecnico.nombre,
+    cargaPrevia: tecnico.abiertos, // puntos de carga antes de esta asignación
+  };
 }
 
 // ---------- Cola 2: notificaciones por correo ----------
@@ -62,11 +67,12 @@ async function procesarNotificacion(job) {
 }
 
 // ---------- Arranque de workers y bitácora ----------
-function crearWorker(nombre, procesador) {
-  const worker = new Worker(nombre, procesador, { connection, concurrency: 5 });
+function crearWorker(nombre, procesador, concurrency = 5) {
+  const worker = new Worker(nombre, procesador, { connection, concurrency });
 
   worker.on('completed', async (job, resultado) => {
-    console.log(`✔ [${nombre}] ${job.id} completado`);
+    const extra = resultado?.prioridad ? ` (prioridad ${resultado.prioridad} → ${resultado.tecnico})` : '';
+    console.log(`✔ [${nombre}] ${job.id} completado${extra}`);
     await jobLogsRepo.registrar({
       jobId: job.id, cola: nombre, ticketId: job.data.ticketId,
       estado: 'completado', intentos: job.attemptsMade, detalle: JSON.stringify(resultado),
@@ -88,7 +94,7 @@ function crearWorker(nombre, procesador) {
 }
 
 const workers = [
-  crearWorker('asignacion', procesarAsignacion),
+  crearWorker('asignacion', procesarAsignacion, 1), // de uno en uno: respeta el orden por prioridad
   crearWorker('notificacion', procesarNotificacion),
 ];
 console.log('👷 Worker escuchando las colas: asignacion, notificacion');
