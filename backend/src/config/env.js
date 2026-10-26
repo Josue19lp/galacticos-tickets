@@ -17,6 +17,11 @@ module.exports = {
     accessExpires: process.env.JWT_ACCESS_EXPIRES || '15m',
     refreshExpires: process.env.JWT_REFRESH_EXPIRES || '7d',
   },
+  // Opcional: si están definidas, los correos se envían por la API HTTP de Mailtrap
+  mailtrap: {
+    token: process.env.MAILTRAP_TOKEN,
+    inboxId: process.env.MAILTRAP_INBOX_ID,
+  },
   smtp: {
     host: process.env.SMTP_HOST || 'smtp.ethereal.email',
     port: Number(process.env.SMTP_PORT) || 587,

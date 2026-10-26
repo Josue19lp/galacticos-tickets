@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const { smtp } = require('../config/env');
+const { smtp, mailtrap } = require('../config/env');
 
 let transporter;
 
@@ -18,8 +18,32 @@ async function obtenerTransporter() {
   return transporter;
 }
 
+// Envío por API HTTP de Mailtrap Sandbox. Se usa en producción porque Render (plan gratuito)
+// bloquea los puertos SMTP. Igual que Ethereal, los correos quedan en una bandeja de pruebas.
+async function enviarPorMailtrap({ para, asunto, html }) {
+  const { token, inboxId } = mailtrap;
+  const resp = await fetch(`https://sandbox.api.mailtrap.io/api/send/${inboxId}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: { email: 'soporte@galacticos.test', name: 'Soporte Galacticos S.A.' },
+      to: para.map((email) => ({ email })),
+      subject: asunto,
+      html,
+    }),
+  });
+  const cuerpo = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    // Lanzar el error hace que BullMQ reintente el trabajo
+    throw new Error(`Mailtrap respondió ${resp.status}: ${JSON.stringify(cuerpo.errors || cuerpo)}`);
+  }
+  return { messageId: cuerpo.message_ids?.[0] || null, preview: null, via: 'mailtrap' };
+}
+
 async function enviar({ para, asunto, html }) {
   if (smtp.simularFallo) throw new Error('Fallo simulado de SMTP (SIMULAR_FALLO_SMTP=true)');
+  if (mailtrap.token && mailtrap.inboxId) return enviarPorMailtrap({ para, asunto, html });
+
   const t = await obtenerTransporter();
   const info = await t.sendMail({
     from: '"Soporte Galacticos S.A." <soporte@galacticos.test>',
@@ -27,7 +51,7 @@ async function enviar({ para, asunto, html }) {
     subject: asunto,
     html,
   });
-  return { messageId: info.messageId, preview: nodemailer.getTestMessageUrl(info) || null };
+  return { messageId: info.messageId, preview: nodemailer.getTestMessageUrl(info) || null, via: 'smtp' };
 }
 
 module.exports = { enviar };
