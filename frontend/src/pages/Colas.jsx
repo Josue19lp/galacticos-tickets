@@ -137,7 +137,7 @@ export default function Colas() {
         <div className={seleccionado ? 'col-lg-7' : 'col-12'}>
           <div className="panel-trabajos">
             <div className="panel-trabajos-cabecera">
-              <h2 className="cola-nombre me-auto">Trabajos</h2>
+              <h2 className="panel-titulo me-auto">Trabajos</h2>
               <select name="cola" className="form-select form-select-sm w-auto" value={filtros.cola} onChange={cambiarFiltro} aria-label="Cola">
                 <option value="">Todas las colas</option>
                 {COLAS.map((c) => <option key={c.valor} value={c.valor}>{c.etiqueta}</option>)}
@@ -159,7 +159,15 @@ export default function Colas() {
                   </thead>
                   <tbody>
                     {jobs.map((j) => (
-                      <tr key={j.id} className={`fila-clic ${seleccionado === j.id ? 'table-active' : ''}`} onClick={() => abrir(j.id)}>
+                      <tr
+                        key={j.id}
+                        className={`fila-clic ${seleccionado === j.id ? 'table-active' : ''}`}
+                        onClick={() => abrir(j.id)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(j.id); } }}
+                        tabIndex={0}
+                        aria-selected={seleccionado === j.id}
+                        aria-label={`Ver detalle de ${j.nombre} del ticket ${j.datos.ticketId}`}
+                      >
                         <td>
                           <div className="fw-semibold">{j.nombre}</div>
                           <div className="text-body-secondary">{j.cola}</div>
@@ -167,7 +175,7 @@ export default function Colas() {
                         <td>#{j.datos.ticketId}</td>
                         <td>{j.prioridad ? <BadgePrioridad valor={PRIORIDAD_JOB[j.prioridad]} /> : '—'}</td>
                         <td><BadgeJob valor={j.estado} /></td>
-                        <td>{j.intentos}/{j.maxIntentos}</td>
+                        <td className="numeros">{j.intentos}/{j.maxIntentos}</td>
                         <td className="text-nowrap" title={fecha(j.creado)}>{haceCuanto(j.creado)}</td>
                       </tr>
                     ))}
@@ -225,11 +233,11 @@ function DetalleJob({ id, onCerrar, esAdmin, alCambiar }) {
 
   return (
     <div className="panel-trabajos detalle-job">
-      <div className="card-header bg-transparent d-flex justify-content-between align-items-center">
-        <h2 className="h6 mb-0">Detalle del trabajo</h2>
-        <button type="button" className="btn-close btn-sm" aria-label="Cerrar" onClick={onCerrar} />
+      <div className="panel-cabecera justify-content-between">
+        <h2 className="panel-titulo">Detalle del trabajo</h2>
+        <button type="button" className="btn-close" aria-label="Cerrar detalle" onClick={onCerrar} />
       </div>
-      <div className="card-body small">
+      <div className="p-4 small">
         <Alerta onCerrar={() => setError('')}>{error}</Alerta>
         <Alerta tipo="success" onCerrar={() => setAviso('')} autoCerrar={5000}>{aviso}</Alerta>
         {!job ? (
@@ -257,7 +265,7 @@ function DetalleJob({ id, onCerrar, esAdmin, alCambiar }) {
             )}
 
             {esAdmin && job.estado === 'failed' && (
-              <button className="btn btn-warning btn-sm mb-3" onClick={reintentar} disabled={reintentando}>
+              <button type="button" className="btn btn-primary mb-3" onClick={reintentar} disabled={reintentando}>
                 {reintentando && <span className="spinner-border spinner-border-sm me-2" />}
                 Reintentar trabajo
               </button>

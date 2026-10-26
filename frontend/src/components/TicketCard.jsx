@@ -20,7 +20,7 @@ export default function TicketCard({ ticket, onCambiarEstado, ocupado }) {
         <BadgePrioridad valor={ticket.prioridad} />
       </div>
 
-      <h3 className="tarjeta-titulo">
+      <h3 className="tarjeta-titulo recorte-2" title={ticket.titulo}>
         <Link to={`/tickets/${ticket.id}`}>{ticket.titulo}</Link>
       </h3>
 

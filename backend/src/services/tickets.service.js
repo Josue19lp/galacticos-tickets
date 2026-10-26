@@ -57,6 +57,10 @@ async function editar(user, id, cambios) {
       if (!tecnico || tecnico.rol !== 'tecnico') throw new AppError(400, 'El técnico no existe');
     }
   }
+  // La prioridad la define quien reporta (cliente) o el admin, no el técnico
+  if (user.rol === 'tecnico' && cambios.prioridad !== undefined && cambios.prioridad !== ticket.prioridad) {
+    throw new AppError(403, 'El técnico no puede cambiar la prioridad del ticket');
+  }
   if (user.rol === 'cliente' && ticket.estado === 'resuelto') {
     throw new AppError(409, 'No se puede editar un ticket resuelto');
   }
