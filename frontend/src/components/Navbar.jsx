@@ -45,8 +45,8 @@ export default function Navbar() {
             <span className="avatar-usuario" aria-hidden="true">
               {user.nombre.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('')}
             </span>
-            <div className="text-white small lh-sm">
-              <div className="fw-semibold">{user.nombre}</div>
+            <div className="text-white small lh-sm usuario-barra">
+              <div className="fw-semibold text-truncate" title={user.nombre}>{user.nombre}</div>
               <div className="rol-usuario">{ROLES[user.rol]?.etiqueta}</div>
             </div>
             <button className="btn btn-sm btn-salir" onClick={salir}>

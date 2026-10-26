@@ -16,8 +16,8 @@ npm run dev              # http://localhost:5173
 ```
 El puerto 5173 debe coincidir con `CLIENT_URL` del `.env` del backend (CORS y cookie).
 
-En modo desarrollo la pantalla de login muestra botones con los usuarios de prueba del `seed.sql`
-(contraseña `Galacticos2026`).
+Usuarios de prueba (contraseña `Galacticos2026`): admin@galacticos.test, carlos@galacticos.test,
+ana@galacticos.test y cliente@galacticos.test.
 
 ## Estructura
 ```
@@ -47,7 +47,7 @@ Axios usa `withCredentials: true` para que viaje la cookie.
 | Pantalla | Cliente | Técnico | Admin |
 |---|---|---|---|
 | Tablero (pendiente / en progreso / resuelto) | Sus tickets | Asignados y sin asignar | Todos |
-| Crear ticket | Sí | Sí | Sí |
+| Crear ticket | Sí | No | No |
 | Editar ticket | Suyos no resueltos | Asignados | Todos |
 | Cambiar estado | No | Sus asignados | Todos |
 | Reasignar técnico | No | No | Sí |

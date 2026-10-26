@@ -23,7 +23,7 @@ function validar({ titulo, descripcion, prioridad }) {
  * - inicial: valores iniciales (al editar)
  * - onGuardar(datos): debe devolver una promesa; si falla se muestran los errores del backend
  */
-export default function TicketForm({ inicial, onGuardar, onCancelar, textoBoton = 'Crear ticket' }) {
+export default function TicketForm({ inicial, onGuardar, onCancelar, textoBoton = 'Crear ticket', bloquearPrioridad = false }) {
   const [form, setForm] = useState({
     titulo: inicial?.titulo || '',
     descripcion: inicial?.descripcion || '',
@@ -96,20 +96,23 @@ export default function TicketForm({ inicial, onGuardar, onCancelar, textoBoton 
             <span key={p.valor} className="flex-fill d-flex">
               <input
                 type="radio" className="btn-check" name="prioridad" id={`prio-${p.valor}`}
-                value={p.valor} checked={form.prioridad === p.valor} onChange={cambiar}
+                value={p.valor} checked={form.prioridad === p.valor} onChange={cambiar} disabled={bloquearPrioridad}
               />
-              <label className={`btn btn-outline-${p.color} flex-fill`} htmlFor={`prio-${p.valor}`}>
+              <label className={`btn btn-prioridad opcion-${p.valor} flex-fill`} htmlFor={`prio-${p.valor}`}>
                 {p.etiqueta}
               </label>
             </span>
           ))}
         </div>
+        {bloquearPrioridad && (
+          <div className="form-text">La prioridad la define el cliente o el administrador.</div>
+        )}
         {errores.prioridad && <div className="invalid-feedback d-block">{errores.prioridad}</div>}
       </fieldset>
 
       <div className="d-flex justify-content-end gap-2">
         {onCancelar && (
-          <button type="button" className="btn btn-light" onClick={onCancelar}>Cancelar</button>
+          <button type="button" className="btn btn-accion px-3" onClick={onCancelar}>Cancelar</button>
         )}
         <button type="submit" className="btn btn-primary" disabled={enviando}>
           {enviando && <span className="spinner-border spinner-border-sm me-2" />}

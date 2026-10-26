@@ -210,3 +210,88 @@ html { font-size: 14px; }
 .barra .nav-link { padding-top: 1rem; padding-bottom: .9rem; }
 .avatar-usuario { width: 32px; height: 32px; }
 .btn-salir { min-height: 36px; }
+
+/* =====================================================================
+   Sistema común (auditoría de UI): las páginas comparten paneles, tablas,
+   insignias, botones y foco visible para verse consistentes.
+   ===================================================================== */
+
+/* ---- Paneles y tablas ---- */
+.panel { background: #fff; border-radius: 14px; box-shadow: 0 1px 2px rgba(20, 20, 60, .06); }
+.panel-cabecera {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
+  padding: 1rem 1.25rem; border-bottom: 1px solid #eceef5;
+}
+.panel-titulo { margin: 0; font-size: 1rem; font-weight: 700; }
+.tabla { font-size: .875rem; }
+.tabla thead th {
+  font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: #5b6170; background: #fafbfd; border-bottom: 1px solid #eceef5; padding: .65rem 1.25rem;
+}
+.tabla td { padding: .75rem 1.25rem; border-color: #f0f1f6; }
+.tabla tbody tr:last-child td { border-bottom: 0; }
+.numeros { font-variant-numeric: tabular-nums; }
+.tabla-trabajos td { font-variant-numeric: tabular-nums; }
+
+/* Ficha lateral del detalle (lista de datos) */
+.ficha > div { padding: 1rem 1.25rem; border-bottom: 1px solid #eceef5; }
+.ficha > div:last-child { border-bottom: 0; }
+.ficha dt { font-size: .82rem; font-weight: 500; color: #5b6170; margin-bottom: .2rem; }
+.ficha dd { margin: 0; }
+
+/* ---- Insignias: misma forma para prioridad, estado, rol y trabajo ---- */
+.insignia { border-radius: 999px; padding: .35em .8em; font-weight: 700; }
+.insignia-prioridad-alta { background: #fde2e2; color: #a61b1b; }
+.insignia-prioridad-media { background: #fff1d1; color: #7a4f00; }
+.insignia-prioridad-baja { background: #dff3f8; color: #0b5a6b; }
+.insignia-estado-pendiente { background: #eceef5; color: #454a5e; }
+.insignia-estado-progreso { background: #e2e5ff; color: #2a37a8; }
+.insignia-estado-resuelto { background: #dcf3e7; color: #16784a; }
+.insignia-rol-admin { background: #e4e3f3; color: var(--gx-noche); }
+.insignia-rol-tecnico { background: #e2e5ff; color: #2a37a8; }
+.insignia-rol-cliente { background: #eceef5; color: #454a5e; }
+.insignia-job-secondary { background: #eceef5; color: #454a5e; }
+.insignia-job-info { background: #dff3f8; color: #0b5a6b; }
+.insignia-job-primary { background: #e2e5ff; color: #2a37a8; }
+.insignia-job-warning { background: #fff1d1; color: #7a4f00; }
+.insignia-job-success { background: #dcf3e7; color: #16784a; }
+.insignia-job-danger { background: #fde2e2; color: #a61b1b; }
+
+/* "Sin asignar" ya no comparte el ámbar de la prioridad media */
+.resumen-sin { color: #5b4bb7; }
+
+/* ---- Selector de prioridad con los mismos colores de las insignias ---- */
+.btn-prioridad { border: 1px solid #d6d9e6; background: #fff; color: #1b1d2e; font-weight: 600; }
+.btn-prioridad:hover { background: #f5f6fb; }
+.btn-check:checked + .opcion-alta { background: #fde2e2; color: #a61b1b; border-color: #e9a6a6; }
+.btn-check:checked + .opcion-media { background: #fff1d1; color: #7a4f00; border-color: #e8c77a; }
+.btn-check:checked + .opcion-baja { background: #dff3f8; color: #0b5a6b; border-color: #8fcbd8; }
+.btn-check:disabled + .btn-prioridad { opacity: .6; }
+
+/* ---- Botones ---- */
+.btn-accion-peligro { color: #a61b1b; }
+.btn-accion-peligro:hover { background: #fde2e2; border-color: #e9a6a6; color: #a61b1b; }
+.confirmar-borrado { border: 1px solid #f1b7b7; background: #fff5f5; border-radius: 10px; padding: .3rem .5rem; }
+
+/* ---- Foco visible en todos los controles personalizados ---- */
+.pildora:focus-visible, .btn-accion:focus-visible, .leyenda-item:focus-visible,
+.btn-prioridad:focus-visible, .btn-check:focus-visible + .btn-prioridad, .tarjeta-titulo a:focus-visible {
+  outline: 2px solid #3346c9; outline-offset: 2px;
+}
+.fila-clic:focus-visible { outline: 2px solid #3346c9; outline-offset: -2px; }
+.barra .nav-link:focus-visible, .btn-salir:focus-visible, .barra .navbar-brand:focus-visible {
+  outline: 2px solid var(--gx-dorado); outline-offset: 2px; border-radius: 6px;
+}
+
+/* ---- Legibilidad: tamaños mínimos con la base de 14px ---- */
+.avatar { font-size: .75rem; }
+.bloque-json { font-size: .8rem; }
+.tarjeta-id, .tarjeta-cliente, .tarjeta-pie { font-size: .85rem; }
+
+/* Nombre largo en la barra superior */
+.usuario-barra { max-width: 180px; min-width: 0; }
+
+/* ---- Respeta la preferencia de menos movimiento ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation-duration: .01ms !important; }
+}

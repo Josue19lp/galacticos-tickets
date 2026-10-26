@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ticketsApi } from '../services/recursos';
 import { ESTADOS, PRIORIDADES, estadoInfo } from '../utils/formato';
@@ -31,9 +31,22 @@ export default function Tablero() {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [ocupadoId, setOcupadoId] = useState(null);
 
-  const [prioridad, setPrioridad] = useState(''); // '' | 'alta' | 'media' | 'baja'
-  const [asignacion, setAsignacion] = useState(''); // '' | 'mios' | 'sin'
-  const [busqueda, setBusqueda] = useState('');
+  // Los filtros viven en la URL (?prioridad=alta&asignacion=sin&q=...) para conservarlos al recargar o compartir
+  const [params, setParams] = useSearchParams();
+  const prioridad = params.get('prioridad') || ''; // '' | 'alta' | 'media' | 'baja'
+  const asignacion = params.get('asignacion') || ''; // '' | 'mios' | 'sin'
+  const busqueda = params.get('q') || '';
+  const setFiltro = (clave, valor) =>
+    setParams((p) => {
+      const nuevo = new URLSearchParams(p);
+      if (valor) nuevo.set(clave, valor);
+      else nuevo.delete(clave);
+      return nuevo;
+    }, { replace: true });
+  const setPrioridad = (v) => setFiltro('prioridad', v);
+  const setAsignacion = (v) => setFiltro('asignacion', v);
+  const setBusqueda = (v) => setFiltro('q', v);
+  const esCliente = user.rol === 'cliente';
 
   // Se cargan todos los tickets visibles para el rol; los filtros se aplican en el navegador
   // para que las tarjetas de resumen no cambien al filtrar.
@@ -102,7 +115,7 @@ export default function Tablero() {
       await ticketsApi.cambiarEstado(ticket.id, estado);
       setAviso({
         tipo: 'success',
-        texto: `Ticket #${ticket.id} movido a "${estadoInfo(estado).etiqueta}". Se encoló la notificación por correo.`,
+        texto: `Ticket #${ticket.id} movido a “${estadoInfo(estado).etiqueta}”. Se encoló la notificación por correo.`,
       });
       await cargar();
     } catch (err) {
@@ -121,7 +134,9 @@ export default function Tablero() {
           <h1 className="titulo-pagina mb-1">{titulo}</h1>
           <p className="text-body-secondary small mb-0">Se actualiza automáticamente cada {REFRESCO_MS / 1000} s</p>
         </div>
-        <button className="btn btn-primary btn-nuevo" onClick={() => setModalAbierto(true)}>+ Nuevo ticket</button>
+        {esCliente && (
+          <button type="button" className="btn btn-primary btn-nuevo" onClick={() => setModalAbierto(true)}>+ Nuevo ticket</button>
+        )}
       </div>
 
       <div className="resumen mb-4">
@@ -176,6 +191,14 @@ export default function Tablero() {
               ocupadoId={ocupadoId}
             />
           ))}
+        </div>
+      )}
+
+      {esCliente && !cargando && tickets.length === 0 && (
+        <div className="panel text-center p-4 mt-3">
+          <p className="mb-2 fw-semibold">Aún no has reportado incidencias</p>
+          <p className="text-body-secondary small mb-3">Crea tu primer ticket y te asignaremos un técnico automáticamente.</p>
+          <button type="button" className="btn btn-primary" onClick={() => setModalAbierto(true)}>Crear mi primer ticket</button>
         </div>
       )}
 

@@ -1,21 +1,23 @@
 import { ESTADOS_JOB, ROLES, estadoInfo, prioridadInfo } from '../utils/formato';
 
-export function BadgePrioridad({ valor }) {
-  const p = prioridadInfo(valor);
-  return <span className={`badge prioridad prioridad-${valor}`}>{p.etiqueta}</span>;
-}
+// Todas las etiquetas comparten la misma forma (píldora suave) y cambian solo de color.
+// Los colores se definen en index.css con las clases insignia-<tipo>-<valor>.
+const Insignia = ({ clase, children }) => <span className={`badge insignia ${clase}`}>{children}</span>;
 
-export function BadgeEstado({ valor }) {
-  const e = estadoInfo(valor);
-  return <span className={`badge text-bg-${e.color}`}>{e.etiqueta}</span>;
-}
+export const BadgePrioridad = ({ valor }) => (
+  <Insignia clase={`insignia-prioridad-${valor}`}>{prioridadInfo(valor).etiqueta}</Insignia>
+);
 
-export function BadgeRol({ valor }) {
-  const r = ROLES[valor] || { etiqueta: valor, color: 'light' };
-  return <span className={`badge text-bg-${r.color}`}>{r.etiqueta}</span>;
-}
+export const BadgeEstado = ({ valor }) => (
+  <Insignia clase={`insignia-estado-${valor}`}>{estadoInfo(valor).etiqueta}</Insignia>
+);
 
-export function BadgeJob({ valor }) {
-  const j = ESTADOS_JOB[valor] || { etiqueta: valor, color: 'light' };
-  return <span className={`badge text-bg-${j.color}`}>{j.etiqueta}</span>;
-}
+export const BadgeRol = ({ valor }) => (
+  <Insignia clase={`insignia-rol-${valor}`}>{ROLES[valor]?.etiqueta || valor}</Insignia>
+);
+
+export const BadgeJob = ({ valor }) => (
+  <Insignia clase={`insignia-job-${ESTADOS_JOB[valor]?.color || 'secondary'}`}>
+    {ESTADOS_JOB[valor]?.etiqueta || valor}
+  </Insignia>
+);
