@@ -8,6 +8,7 @@ import { extraerError } from '../utils/errores';
 import { BadgeJob, BadgePrioridad } from '../components/Badges';
 import Alerta from '../components/Alerta';
 import Cargando from '../components/Cargando';
+import { EsqueletoTabla } from '../components/Esqueleto';
 
 const COLAS = [
   { valor: 'asignacion', etiqueta: 'Asignación', descripcion: 'Asigna el técnico con menos carga' },
@@ -148,7 +149,7 @@ export default function Colas() {
               </select>
             </div>
             {cargando ? (
-              <Cargando />
+              <EsqueletoTabla />
             ) : jobs.length === 0 ? (
               <p className="text-body-secondary small mb-0 p-4">No hay trabajos con esos filtros.</p>
             ) : (
