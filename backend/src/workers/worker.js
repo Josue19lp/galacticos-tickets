@@ -95,9 +95,12 @@ function crearWorker(nombre, procesador, concurrency = 5, limiter) {
 
 const workers = [
   crearWorker('asignacion', procesarAsignacion, 1), // de uno en uno: respeta el orden por prioridad
-  // Limitador: máximo 1 correo cada 2 s. El plan gratuito de Mailtrap rechaza ráfagas (429)
-  // y así los correos esperan su turno en la cola en lugar de fallar.
-  crearWorker('notificacion', procesarNotificacion, 1, { max: 1, duration: 2000 }),
+  // Limitador: máximo 1 correo cada NOTIF_INTERVALO_MS (10 s por defecto). El plan gratuito de
+  // Mailtrap rechaza envíos seguidos (429); así los correos esperan su turno en lugar de fallar.
+  crearWorker('notificacion', procesarNotificacion, 1, {
+    max: 1,
+    duration: Number(process.env.NOTIF_INTERVALO_MS) || 10000,
+  }),
 ];
 console.log('👷 Worker escuchando las colas: asignacion, notificacion');
 
