@@ -1,12 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { haceCuanto, puedeCambiarEstado } from '../utils/formato';
+import { colorPersona, haceCuanto, iniciales, puedeCambiarEstado } from '../utils/formato';
 import { BadgePrioridad } from './Badges';
 import AccionesEstado from './AccionesEstado';
-
-// "Carlos Técnico" → "CT"
-const iniciales = (nombre) =>
-  nombre.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
 
 export default function TicketCard({ ticket, onCambiarEstado, ocupado }) {
   const { user } = useAuth();
@@ -14,7 +10,7 @@ export default function TicketCard({ ticket, onCambiarEstado, ocupado }) {
   const asignado = Boolean(ticket.tecnico_nombre);
 
   return (
-    <article className={`tarjeta-ticket ${esMio ? 'es-mio' : ''}`}>
+    <article className={`tarjeta-ticket borde-${ticket.prioridad} ${esMio ? 'es-mio' : ''}`}>
       <div className="d-flex justify-content-between align-items-center">
         <span className="tarjeta-id">#{ticket.id}</span>
         <BadgePrioridad valor={ticket.prioridad} />
@@ -28,7 +24,10 @@ export default function TicketCard({ ticket, onCambiarEstado, ocupado }) {
 
       <div className="tarjeta-pie">
         <div className="d-flex align-items-center gap-2 text-truncate">
-          <span className={`avatar ${asignado ? '' : 'avatar-vacio'}`} aria-hidden="true">
+          <span
+            className={`avatar ${asignado ? '' : 'avatar-vacio'}`} aria-hidden="true"
+            style={asignado ? colorPersona(ticket.tecnico_nombre) : undefined}
+          >
             {asignado ? iniciales(ticket.tecnico_nombre) : '?'}
           </span>
           <span className="text-truncate">{asignado ? ticket.tecnico_nombre : 'Sin asignar'}</span>

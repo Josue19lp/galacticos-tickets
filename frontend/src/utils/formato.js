@@ -75,3 +75,14 @@ export function puedeEditar(user, t) {
 
 export const puedeEliminar = (user, t) =>
   user.rol === 'admin' || (user.rol === 'cliente' && t.cliente_id === user.id && t.estado === 'pendiente');
+
+// Color estable por persona: el mismo nombre siempre produce el mismo tono
+export function colorPersona(nombre = '') {
+  let h = 0;
+  for (const c of nombre) h = (h * 31 + c.charCodeAt(0)) % 360;
+  return { background: `hsl(${h} 75% 92%)`, color: `hsl(${h} 55% 30%)` };
+}
+
+export const iniciales = (nombre = '') =>
+  nombre.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
+

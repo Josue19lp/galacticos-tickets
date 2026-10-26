@@ -4,7 +4,7 @@ import { ROLES, fecha } from '../utils/formato';
 import { extraerError } from '../utils/errores';
 import { BadgeRol } from '../components/Badges';
 import Alerta from '../components/Alerta';
-import Cargando from '../components/Cargando';
+import { EsqueletoTabla } from '../components/Esqueleto';
 
 const VACIO = { nombre: '', email: '', password: '', rol: 'tecnico' };
 
@@ -89,7 +89,7 @@ export default function Usuarios() {
               </select>
             </div>
             <div className={error ? 'px-3 pt-3' : ''}><Alerta onCerrar={() => setError('')}>{error}</Alerta></div>
-            {cargando ? <Cargando /> : (
+            {cargando ? <EsqueletoTabla /> : (
               <div className="table-responsive">
                 <table className="table align-middle mb-0 tabla">
                   <thead><tr><th>#</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Registrado</th></tr></thead>

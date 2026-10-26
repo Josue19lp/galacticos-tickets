@@ -8,7 +8,8 @@ import ColumnaEstado from '../components/ColumnaEstado';
 import TicketForm from '../components/TicketForm';
 import Modal from '../components/Modal';
 import Alerta from '../components/Alerta';
-import Cargando from '../components/Cargando';
+import { EsqueletoTablero } from '../components/Esqueleto';
+import { IconoBandeja, IconoCheck, IconoCohete, IconoFuego, IconoPersona } from '../components/Iconos';
 
 const REFRESCO_MS = 10000; // el worker asigna en segundo plano, así que el tablero se actualiza solo
 const SEMANA_MS = 7 * 24 * 60 * 60 * 1000;
@@ -70,13 +71,15 @@ export default function Tablero() {
   const resumen = useMemo(() => {
     const abiertos = tickets.filter((t) => t.estado !== 'resuelto');
     return [
-      { etiqueta: 'Abiertos', valor: abiertos.length, clase: '' },
-      { etiqueta: 'Prioridad alta', valor: abiertos.filter((t) => t.prioridad === 'alta').length, clase: 'resumen-alta' },
-      { etiqueta: 'Sin asignar', valor: abiertos.filter((t) => t.tecnico_id === null).length, clase: 'resumen-sin' },
+      { etiqueta: 'Abiertos', valor: abiertos.length, clase: '', tono: 'tono-azul', Icono: IconoBandeja },
+      { etiqueta: 'Prioridad alta', valor: abiertos.filter((t) => t.prioridad === 'alta').length, clase: 'resumen-alta', tono: 'tono-rojo', Icono: IconoFuego },
+      { etiqueta: 'Sin asignar', valor: abiertos.filter((t) => t.tecnico_id === null).length, clase: 'resumen-sin', tono: 'tono-morado', Icono: IconoPersona },
       {
         etiqueta: 'Resueltos esta semana',
         valor: tickets.filter((t) => t.estado === 'resuelto' && Date.now() - new Date(t.updated_at) < SEMANA_MS).length,
         clase: 'resumen-resuelto',
+        tono: 'tono-verde',
+        Icono: IconoCheck,
       },
     ];
   }, [tickets]);
@@ -126,24 +129,37 @@ export default function Tablero() {
   };
 
   const titulo = { cliente: 'Mis tickets', tecnico: 'Tickets asignados y por asignar', admin: 'Todos los tickets' }[user.rol];
+  const nombre = user.nombre.split(' ')[0];
+  const hoy = new Intl.DateTimeFormat('es-GT', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+  const abiertos = tickets.filter((t) => t.estado !== 'resuelto');
+  const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+  const resumenTexto = {
+    cliente: `Tienes ${plural(abiertos.length, 'ticket abierto', 'tickets abiertos')}.`,
+    tecnico: `Tienes ${plural(abiertos.filter((t) => t.tecnico_id === user.id).length, 'ticket asignado', 'tickets asignados')} por atender.`,
+    admin: `Hay ${plural(abiertos.length, 'ticket abierto', 'tickets abiertos')}, ${abiertos.filter((t) => t.tecnico_id === null).length} sin asignar.`,
+  }[user.rol];
 
   return (
     <div className="container-xl py-4 tablero-pagina">
-      <div className="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+      <header className="bienvenida mb-4">
         <div>
-          <h1 className="titulo-pagina mb-1">{titulo}</h1>
-          <p className="text-body-secondary small mb-0">Se actualiza automáticamente cada {REFRESCO_MS / 1000} s</p>
+          <p className="bienvenida-fecha mb-1">{hoy}</p>
+          <h1 className="bienvenida-titulo mb-1">Hola, {nombre} <span aria-hidden="true">👋</span></h1>
+          <p className="bienvenida-texto mb-0">{cargando ? 'Cargando tu resumen…' : resumenTexto} <span className="bienvenida-vista">· {titulo}</span></p>
         </div>
         {esCliente && (
-          <button type="button" className="btn btn-primary btn-nuevo" onClick={() => setModalAbierto(true)}>+ Nuevo ticket</button>
+          <button type="button" className="btn btn-nuevo btn-dorado" onClick={() => setModalAbierto(true)}>+ Nuevo ticket</button>
         )}
-      </div>
+      </header>
 
       <div className="resumen mb-4">
         {resumen.map((r) => (
           <div key={r.etiqueta} className="resumen-tarjeta">
-            <span className="resumen-etiqueta">{r.etiqueta}</span>
-            <span className={`resumen-valor ${r.clase}`}>{cargando ? '–' : r.valor}</span>
+            <span className={`resumen-icono ${r.tono}`}><r.Icono /></span>
+            <div className="d-flex flex-column gap-1">
+              <span className="resumen-etiqueta">{r.etiqueta}</span>
+              <span className={`resumen-valor ${r.clase}`}>{cargando ? '–' : r.valor}</span>
+            </div>
           </div>
         ))}
       </div>
@@ -179,7 +195,7 @@ export default function Tablero() {
       <Alerta onCerrar={() => setError('')}>{error}</Alerta>
 
       {cargando ? (
-        <Cargando texto="Cargando tickets…" />
+        <EsqueletoTablero />
       ) : (
         <div className="tablero">
           {ESTADOS.map((e) => (
@@ -196,6 +212,7 @@ export default function Tablero() {
 
       {esCliente && !cargando && tickets.length === 0 && (
         <div className="panel text-center p-4 mt-3">
+          <span className="vacio-icono mb-2"><IconoCohete size={28} /></span>
           <p className="mb-2 fw-semibold">Aún no has reportado incidencias</p>
           <p className="text-body-secondary small mb-3">Crea tu primer ticket y te asignaremos un técnico automáticamente.</p>
           <button type="button" className="btn btn-primary" onClick={() => setModalAbierto(true)}>Crear mi primer ticket</button>
