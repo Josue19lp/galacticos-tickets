@@ -67,8 +67,8 @@ async function procesarNotificacion(job) {
 }
 
 // ---------- Arranque de workers y bitácora ----------
-function crearWorker(nombre, procesador, concurrency = 5) {
-  const worker = new Worker(nombre, procesador, { connection, concurrency });
+function crearWorker(nombre, procesador, concurrency = 5, limiter) {
+  const worker = new Worker(nombre, procesador, { connection, concurrency, limiter });
 
   worker.on('completed', async (job, resultado) => {
     const extra = resultado?.prioridad ? ` (prioridad ${resultado.prioridad} → ${resultado.tecnico})` : '';
@@ -95,7 +95,9 @@ function crearWorker(nombre, procesador, concurrency = 5) {
 
 const workers = [
   crearWorker('asignacion', procesarAsignacion, 1), // de uno en uno: respeta el orden por prioridad
-  crearWorker('notificacion', procesarNotificacion),
+  // Limitador: máximo 1 correo cada 2 s. El plan gratuito de Mailtrap rechaza ráfagas (429)
+  // y así los correos esperan su turno en la cola en lugar de fallar.
+  crearWorker('notificacion', procesarNotificacion, 1, { max: 1, duration: 2000 }),
 ];
 console.log('👷 Worker escuchando las colas: asignacion, notificacion');
 
