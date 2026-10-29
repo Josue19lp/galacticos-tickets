@@ -6,4 +6,7 @@ const filtros = Joi.object({
   limite: Joi.number().integer().min(1).max(200).default(50),
 });
 
-module.exports = { filtros };
+// Interruptor de simulación de fallos de correo
+const simulacion = Joi.object({ activo: Joi.boolean().required() });
+
+module.exports = { filtros, simulacion };

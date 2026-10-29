@@ -53,7 +53,7 @@ npm run worker                  # en otra terminal: procesa las colas
 - Errores de validación: `400 { error, detalles: [{ campo, mensaje }] }`.
 
 ## Demo de reintentos
-Poner `SIMULAR_FALLO_SMTP=true` en `.env` y reiniciar el worker. Los correos fallan, BullMQ reintenta a los 2, 4 y 8 s, y el job queda en `failed` (visible en bull-board, `/api/jobs?estado=failed` y la tabla `job_logs`). Luego volver a `false` y reintentar desde bull-board o `POST /api/jobs/:id/reintentar`.
+Poner `SIMULAR_FALLO_SMTP=true` en `.env` y reiniciar el worker. Los correos fallan, BullMQ reintenta a los 2 y 4 s (3 intentos en total), y el job queda en `failed` (visible en bull-board, `/api/jobs?estado=failed` y la tabla `job_logs`). Luego volver a `false` y reintentar desde bull-board o `POST /api/jobs/:id/reintentar`.
 
 ## Correos
 Si `SMTP_USER`/`SMTP_PASS` están vacíos, el worker crea una cuenta Ethereal automáticamente y muestra en consola el enlace de vista previa de cada correo.

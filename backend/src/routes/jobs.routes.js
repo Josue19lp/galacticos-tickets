@@ -10,6 +10,7 @@ router.use(auth, authorize('tecnico', 'admin'));
 
 router.get('/', validar(s.filtros, 'query'), ctrl.listar);
 router.get('/resumen', ctrl.resumen);
+router.post('/simular-fallo', authorize('admin'), validar(s.simulacion), ctrl.simularFallo);
 router.get('/:id', ctrl.obtener);
 router.post('/:id/reintentar', authorize('admin'), ctrl.reintentar);
 

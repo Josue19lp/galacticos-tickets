@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const { smtp, mailtrap } = require('../config/env');
+const simulacion = require('./simulacion.service');
 
 let transporter;
 
@@ -41,7 +42,9 @@ async function enviarPorMailtrap({ para, asunto, html }) {
 }
 
 async function enviar({ para, asunto, html }) {
+  // Fallo a propósito para demostrar reintentos: por variable de entorno o por el interruptor de la vista Colas
   if (smtp.simularFallo) throw new Error('Fallo simulado de SMTP (SIMULAR_FALLO_SMTP=true)');
+  if (await simulacion.estaActiva()) throw new Error('Fallo simulado de envío de correo (activado desde la vista Colas)');
   if (mailtrap.token && mailtrap.inboxId) return enviarPorMailtrap({ para, asunto, html });
 
   const t = await obtenerTransporter();

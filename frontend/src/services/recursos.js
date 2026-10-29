@@ -27,6 +27,7 @@ export const jobsApi = {
   resumen: () => api.get('/jobs/resumen').then((r) => r.data),
   obtener: (id) => api.get(`/jobs/${encodeURIComponent(id)}`).then((r) => r.data),
   reintentar: (id) => api.post(`/jobs/${encodeURIComponent(id)}/reintentar`).then((r) => r.data),
+  simularFallo: (activo) => api.post('/jobs/simular-fallo', { activo }).then((r) => r.data),
 };
 
 // Quita filtros vacíos: Joi rechaza estado="" porque no es un valor válido
