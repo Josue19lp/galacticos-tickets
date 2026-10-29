@@ -25,6 +25,21 @@ export default function Colas() {
   const [jobs, setJobs] = useState([]);
   const [filtros, setFiltros] = useState({ cola: '', estado: '', limite: 50 });
   const [autoRefresco, setAutoRefresco] = useState(true);
+  const [cambiandoSimulacion, setCambiandoSimulacion] = useState(false);
+  const simulacionActiva = Boolean(resumen?.simulacionFallo);
+
+  // Activa o desactiva la simulación de fallos de correo (demostración de reintentos)
+  const alternarSimulacion = async (activo) => {
+    setCambiandoSimulacion(true);
+    try {
+      await jobsApi.simularFallo(activo);
+      setResumen((r) => ({ ...r, simulacionFallo: activo }));
+    } catch (err) {
+      setError(extraerError(err).mensaje);
+    } finally {
+      setCambiandoSimulacion(false);
+    }
+  };
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
 
@@ -74,13 +89,24 @@ export default function Colas() {
       <div className="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>
           <h1 className="titulo-pagina mb-1">Colas de trabajo</h1>
-          <p className="text-body-secondary small mb-0">3 intentos automáticos con espera de 2, 4 y 8 s</p>
+          <p className="text-body-secondary small mb-0">Hasta 3 intentos automáticos, con esperas de 2 y 4 s entre ellos</p>
         </div>
         <div className="d-flex align-items-center gap-3">
           <div className="form-check form-switch mb-0">
             <input className="form-check-input" type="checkbox" id="auto" checked={autoRefresco} onChange={(e) => setAutoRefresco(e.target.checked)} />
             <label className="form-check-label small" htmlFor="auto">Tiempo real</label>
           </div>
+          {user.rol === 'admin' && (
+            <div className="form-check form-switch mb-0">
+              <input
+                className="form-check-input" type="checkbox" id="simular" checked={simulacionActiva}
+                disabled={cambiandoSimulacion || !resumen} onChange={(e) => alternarSimulacion(e.target.checked)}
+              />
+              <label className={`form-check-label small ${simulacionActiva ? 'text-danger fw-semibold' : ''}`} htmlFor="simular">
+                Simular fallo de correo
+              </label>
+            </div>
+          )}
           {user.rol === 'admin' && (
             <a className="btn btn-accion px-3 d-flex align-items-center" href={`${API_ORIGIN}/admin/queues`} target="_blank" rel="noreferrer">
               Abrir bull-board ↗
@@ -90,6 +116,12 @@ export default function Colas() {
       </div>
 
       <Alerta onCerrar={() => setError('')}>{error}</Alerta>
+      {simulacionActiva && (
+        <Alerta tipo="warning">
+          <strong>Simulación de fallos activa.</strong> Todos los correos fallarán y se reintentarán hasta agotar sus 3 intentos.
+          Desactívala antes de reintentar los trabajos fallidos. Se apaga sola después de 1 hora.
+        </Alerta>
+      )}
 
       {/* Resumen por cola: una barra y una leyenda en texto */}
       <div className="row g-3 mb-4">

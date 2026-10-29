@@ -2,6 +2,7 @@ const AppError = require('../utils/AppError');
 const { asignacionQueue } = require('../queues/asignacion.queue');
 const { notificacionQueue } = require('../queues/notificacion.queue');
 const jobLogsRepo = require('../repositories/jobLogs.repository');
+const simulacion = require('./simulacion.service');
 
 const COLAS = { asignacion: asignacionQueue, notificacion: notificacionQueue };
 const ESTADOS = ['waiting', 'prioritized', 'active', 'delayed', 'completed', 'failed'];
@@ -41,6 +42,7 @@ async function listar({ cola, estado, limite = 50 }) {
 async function resumen() {
   const out = {};
   for (const [nombre, q] of Object.entries(COLAS)) out[nombre] = await q.getJobCounts(...ESTADOS);
+  out.simulacionFallo = await simulacion.estaActiva();
   return out;
 }
 
@@ -65,4 +67,6 @@ async function reintentar(id) {
   throw new AppError(404, 'Trabajo no encontrado');
 }
 
-module.exports = { listar, resumen, obtener, reintentar, COLAS };
+const simularFallo = (activo) => simulacion.cambiar(activo);
+
+module.exports = { listar, resumen, obtener, reintentar, simularFallo, COLAS };
